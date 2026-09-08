@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.pem
+*.key
+coverage/
+data/corpus-snapshot.json
+data/backups/
+.DS_Store

@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodically refresh external corpus snapshot
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+Persistent=true
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

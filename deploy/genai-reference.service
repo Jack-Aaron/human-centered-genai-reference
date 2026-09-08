@@ -1,0 +1,35 @@
+[Unit]
+Description=Human-Centered Generative AI Reference Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=genai-reference
+Group=genai-reference
+WorkingDirectory=/opt/genai-reference
+EnvironmentFile=/opt/genai-reference/.env
+ExecStart=/usr/bin/node /opt/genai-reference/dist/server.js
+Restart=on-failure
+RestartSec=3
+UMask=0077
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/genai-reference/data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

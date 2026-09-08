@@ -1,0 +1,16 @@
+[Unit]
+Description=Refresh external corpus snapshot for GenAI reference service
+
+[Service]
+Type=oneshot
+User=genai-reference
+Group=genai-reference
+WorkingDirectory=/opt/genai-reference
+EnvironmentFile=/opt/genai-reference/.env
+ExecStart=/usr/bin/node /opt/genai-reference/dist/cli.js corpus-refresh
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/genai-reference/data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true

@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS api_clients (
+  key_id TEXT PRIMARY KEY,
+  public_key_pem TEXT NOT NULL,
+  fingerprint TEXT NOT NULL UNIQUE,
+  enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+  daily_cap INTEGER NOT NULL CHECK (daily_cap > 0),
+  daily_count INTEGER NOT NULL DEFAULT 0,
+  daily_date TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
