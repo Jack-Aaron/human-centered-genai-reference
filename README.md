@@ -4,7 +4,7 @@ A domain-agnostic reference implementation of an end-to-end generative AI system
 
 The original system operates in a specialized private content domain. The domain corpus, production identifiers, deployment credentials, and proprietary prompt/evaluation material are intentionally excluded from this repository. Synthetic examples are used throughout.
 
-This public implementation preserves the engineering concepts: human-in-the-loop evaluation, noisy preference signals, candidate validation and deduplication, authoritative external-corpus checks, persistent state, cryptographic client authentication, replay protection, rate limiting, Slack request verification, automated tests, and hardened Linux deployment.
+This public implementation preserves the engineering concepts: human-in-the-loop evaluation, noisy preference signals, candidate validation and deduplication, authoritative external-corpus checks, persistent state, cryptographic client authentication, replay protection, rate limiting, Slack request verification, durable downstream delivery, automated tests, and hardened Linux deployment.
 
 ## Why this project exists
 
@@ -62,6 +62,15 @@ Slack signed request    Ed25519 client API
                 |
                 v
               output
+                |
+                +----------------------+
+                |                      |
+                v                      v
+          direct consumer     optional durable
+                              delivery agent
+                                      |
+                                      v
+                                external UI
 ```
 
 The serving path does **not** require a live model call. This intentionally separates stochastic/expensive generation from deterministic production serving.
@@ -78,6 +87,7 @@ The serving path does **not** require a live model call. This intentionally sepa
 - Proof-of-possession self-registration that creates pending client identities only
 - Separate Slack trust boundary using Slack HMAC request verification
 - Strict body, method, path, content-type, and request-size validation
+- Durable optional delivery pattern with persist-before-send state, exact confirmation, and crash reconciliation
 - CLI operations for queue management, client administration, registration approval, backups, and corpus refresh
 - Structured HTTP telemetry that avoids logging authentication signatures or private keys
 - systemd sandboxing examples for least-privilege Linux deployment
@@ -191,6 +201,16 @@ node scripts/analyze-evaluations.mjs data/evaluation-sample.csv
 
 It reports mean scores, exact agreement, within-one-point agreement, and Pearson correlation.
 
+## Durable automated delivery
+
+Some deployments need to move a served candidate into a third-party interface after the authenticated API returns it. That downstream action is modeled as a separate delivery agent rather than part of the serving transaction.
+
+The reference pattern persists the exact output **before** crossing the external side-effect boundary, verifies the resulting external message using stable target/sender identifiers, and reconciles a previously `sending` item after a crash instead of blindly reposting it.
+
+This pattern also isolates persistent browser-session material from the serving account and treats forced login, MFA, CAPTCHA, or other security challenges as a human reauthentication event rather than something to bypass.
+
+See [docs/AUTOMATED_DELIVERY.md](docs/AUTOMATED_DELIVERY.md) and [examples/durable-delivery-state.mjs](examples/durable-delivery-state.mjs).
+
 ## Security model
 
 Authentication is not authorization to do everything.
@@ -248,7 +268,7 @@ This repository intentionally does **not** contain:
 - real generated outputs from the private project;
 - private evaluation exemplars or production prompts;
 - production hostnames, client identities, Slack workspace identifiers, or credentials;
-- production databases, backups, logs, or operator notes;
+- production databases, backups, logs, browser profiles, or operator notes;
 - Git history from the private implementation.
 
 It is a clean-room public reference implementation of the architecture and engineering work.

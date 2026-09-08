@@ -1,0 +1,39 @@
+[Unit]
+Description=Optional Durable Delivery Agent
+After=network-online.target genai-reference.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=genai-delivery
+Group=genai-delivery
+WorkingDirectory=/opt/genai-delivery
+Environment=HOME=/var/lib/genai-delivery
+EnvironmentFile=/opt/genai-delivery/delivery.env
+ExecStart=/usr/bin/flock -n /var/lib/genai-delivery/scheduler.lock /usr/bin/node /opt/genai-delivery/scheduler.mjs
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0077
+LimitCORE=0
+
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Browser automation may require user namespaces for its own sandbox.
+# Validate namespace restrictions on the target distribution before adding
+# RestrictNamespaces= or other sandbox directives that interfere with it.
+
+[Install]
+WantedBy=multi-user.target

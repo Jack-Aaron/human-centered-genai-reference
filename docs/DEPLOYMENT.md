@@ -66,6 +66,25 @@ A manual forced refresh is available through:
 node dist/cli.js corpus-refresh --force
 ```
 
+## Optional delivery agent
+
+When a deployment uses browser automation or another stateful external-session mechanism, run it under a **different Unix account** from the serving application.
+
+The delivery account should have only:
+
+- its own narrowly scoped API client private key;
+- its own pending/history state directory;
+- the external browser/session profile when required;
+- the executable and configuration needed for delivery.
+
+It should not be able to read the serving SQLite database, backups, administrative environment file, or server-side secrets.
+
+`deploy/delivery-agent.service` is a generic systemd pattern for a persistent low-memory scheduler that launches an external delivery worker only when needed. It intentionally omits `RestrictNamespaces=` because browser sandboxes may require user namespaces; validate the browser and service sandbox together before adding namespace restrictions.
+
+A persistent browser does not need to remain running between deliveries. Keeping the scheduler resident while launching the browser only for reconciliation/send/verification substantially reduces idle memory use.
+
+See [AUTOMATED_DELIVERY.md](AUTOMATED_DELIVERY.md).
+
 ## Backups
 
 Use SQLite-aware backup APIs rather than copying a live WAL-mode database with plain `cp`.

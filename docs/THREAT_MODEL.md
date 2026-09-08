@@ -52,6 +52,24 @@ A cheap preflight gate improves efficiency but does not provide correctness. Can
 
 Novelty verification depends on an external source of truth. Returning an unchecked candidate during an outage would violate the data-integrity guarantee, so serving fails closed when no sufficiently fresh validated snapshot exists.
 
+## Optional delivery-agent threats
+
+A downstream delivery agent introduces a different class of failure because an external UI side effect cannot generally participate in the serving database transaction.
+
+Relevant risks include:
+
+- losing an output after the API marks it served but before external delivery;
+- duplicating an external message after a crash or timeout;
+- confirming another user's identical message as the agent's own;
+- posting to the wrong target after navigation or UI changes;
+- leaking a persistent browser profile or external-session material;
+- consuming additional API inventory while the external account requires login;
+- weakening the browser sandbox to accommodate automation.
+
+The reference pattern mitigates these risks by persisting the exact output before submission, marking send attempts durably, verifying stable target/sender identity plus exact rendered content, reconciling ambiguous sends before retry, isolating the delivery account from serving secrets, and requiring human reauthentication for security challenges.
+
+Browser/session state is treated as credential material even when no plaintext password is stored.
+
 ## Scope
 
-This reference architecture targets ordinary internet abuse and integration mistakes. It is not presented as protection against large volumetric denial-of-service attacks or compromise of the host operating system.
+This reference architecture targets ordinary internet abuse, integration mistakes, and recoverable downstream delivery failures. It is not presented as protection against large volumetric denial-of-service attacks, compromise of the host operating system, or compromise of the third-party platform itself.
